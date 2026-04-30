@@ -19,13 +19,20 @@
 //! ─────────────────────────────────────────────────────────────────────────
 
 use anchor_lang::prelude::*;
-use anchor_spl::token::{Mint, Token, TokenAccount};
 
 pub mod errors;
 pub mod instructions;
 pub mod state;
 
-use instructions::*;
+pub use instructions::apply_funding::FundingCallback;
+pub use instructions::cancel_order::CancelOrder;
+pub use instructions::deposit_collateral::DepositCollateral;
+pub use instructions::execute_liquidation::{LiquidationCallback, QueueLiquidationCheck};
+pub use instructions::initialize_market::InitializeMarket;
+pub use instructions::place_order::{MpcCallback, PlaceOrder};
+pub use instructions::update_market::UpdateMarket;
+pub use instructions::update_oracle::UpdateOracle;
+pub use instructions::withdraw_collateral::WithdrawCollateral;
 use state::*;
 
 declare_id!("5ZVFRvDMyq3ThqSEz7TxenA6mRasM7y3PK2efFRqKEYx");
