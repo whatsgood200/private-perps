@@ -1,0 +1,16 @@
+node_modules/
+.next/
+dist/
+target/
+.anchor/
+test-ledger/
+*.so
+*.d.ts.map
+.env
+.env.local
+.env.*.local
+.DS_Store
+Thumbs.db
+yarn-error.log
+npm-debug.log*
+.vercel

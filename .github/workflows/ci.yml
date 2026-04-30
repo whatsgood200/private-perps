@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  anchor-build:
+    name: Anchor Build & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          components: clippy, rustfmt
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install Solana CLI (stable)
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+      - name: Verify Solana version
+        run: solana --version
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Anchor CLI
+        run: npm install -g @coral-xyz/anchor-cli@0.30.1
+
+      - name: Generate CI keypair
+        run: |
+          mkdir -p ~/.config/solana
+          solana-keygen new --no-bip39-passphrase -o ~/.config/solana/id.json
+
+      - name: Cargo fmt check
+        run: cargo fmt --all -- --check
+        continue-on-error: true
+
+      - name: Cargo clippy
+        run: cargo clippy --all-targets
+        continue-on-error: true
+
+      - name: Anchor build
+        run: anchor build
+
+  sdk-build:
+    name: SDK Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install SDK dependencies
+        working-directory: sdk
+        run: npm install
+
+      - name: TypeScript compile
+        working-directory: sdk
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+  frontend-build:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install app dependencies
+        working-directory: app
+        run: npm install --legacy-peer-deps
+
+      - name: Next.js build
+        working-directory: app
+        run: npm run build
+        env:
+          NEXT_PUBLIC_RPC_URL: "https://api.devnet.solana.com"
+        continue-on-error: true

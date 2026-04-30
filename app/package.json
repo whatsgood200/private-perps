@@ -1,0 +1,39 @@
+{
+  "name": "private-perps-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev":    "next dev",
+    "build":  "next build",
+    "start":  "next start",
+    "lint":   "next lint"
+  },
+  "dependencies": {
+    "next":                      "14.2.3",
+    "react":                     "^18",
+    "react-dom":                 "^18",
+    "@coral-xyz/anchor":         "^0.30.1",
+    "@solana/web3.js":           "^1.91.0",
+    "@solana/spl-token":         "^0.4.6",
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/wallet-adapter-react-ui": "^0.9.35",
+    "@solana/wallet-adapter-wallets": "^0.19.32",
+    "framer-motion":             "^11.2.6",
+    "recharts":                  "^2.12.7",
+    "bn.js":                     "^5.2.1",
+    "tweetnacl":                 "^1.0.3",
+    "tweetnacl-util":            "^0.15.1",
+    "clsx":                      "^2.1.1",
+    "lucide-react":              "^0.383.0"
+  },
+  "devDependencies": {
+    "@types/node":    "^20",
+    "@types/react":   "^18",
+    "@types/react-dom": "^18",
+    "typescript":     "^5",
+    "tailwindcss":    "^3.4.1",
+    "autoprefixer":   "^10.0.1",
+    "postcss":        "^8"
+  }
+}

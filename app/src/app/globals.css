@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Fonts ─────────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
+/* ── Base ──────────────────────────────────────────────────────────────── */
+:root {
+  --arcium: #7c5cfc;
+  --arcium-bright: #a78bfa;
+  --profit: #00e5a0;
+  --loss: #ff4466;
+  --warn: #ffaa00;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: #050508;
+  color: #e8e8ff;
+  font-family: var(--font-display), monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #08080f; }
+::-webkit-scrollbar-thumb { background: #1e1e3a; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #7c5cfc; }
+
+/* ── Selection ─────────────────────────────────────────────────────────── */
+::selection { background: rgba(124, 92, 252, 0.3); color: #e8e8ff; }
+
+/* ── Noise overlay ─────────────────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* ── Glass panels ──────────────────────────────────────────────────────── */
+.glass {
+  background: rgba(13, 13, 26, 0.8);
+  backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid rgba(30, 30, 58, 0.8);
+}
+
+.glass-bright {
+  background: rgba(17, 17, 34, 0.9);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(124, 92, 252, 0.15);
+}
+
+/* ── Arcium glow ───────────────────────────────────────────────────────── */
+.arcium-glow {
+  box-shadow:
+    0 0 40px rgba(124, 92, 252, 0.15),
+    0 0 80px rgba(124, 92, 252, 0.05),
+    inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* ── Encrypted badge shimmer ───────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+.encrypted-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(124,92,252,0.3) 0%,
+    rgba(167,139,250,0.8) 40%,
+    rgba(124,92,252,0.3) 80%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+
+/* ── Chart overrides ───────────────────────────────────────────────────── */
+.recharts-tooltip-wrapper { outline: none !important; }
+.recharts-tooltip-content {
+  background: rgba(13,13,26,0.95) !important;
+  border: 1px solid rgba(124,92,252,0.3) !important;
+  border-radius: 8px !important;
+}
+
+/* ── Input styles ──────────────────────────────────────────────────────── */
+.perp-input {
+  background: rgba(8, 8, 15, 0.8);
+  border: 1px solid rgba(30, 30, 58, 0.8);
+  color: #e8e8ff;
+  font-family: var(--font-mono);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.perp-input:focus {
+  outline: none;
+  border-color: rgba(124, 92, 252, 0.6);
+  box-shadow: 0 0 0 3px rgba(124, 92, 252, 0.1);
+}
+
+/* ── Wallet adapter overrides ──────────────────────────────────────────── */
+.wallet-adapter-button {
+  background: linear-gradient(135deg, #7c5cfc, #5b3de8) !important;
+  font-family: var(--font-display) !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  height: 40px !important;
+  padding: 0 20px !important;
+}
+
+.wallet-adapter-modal-wrapper {
+  background: rgba(8, 8, 15, 0.98) !important;
+  border: 1px solid rgba(124, 92, 252, 0.2) !important;
+}
