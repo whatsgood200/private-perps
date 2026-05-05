@@ -9,3 +9,5 @@ pub use position::*;
 pub use vault::*;
 pub use order::*;
 pub use registry::*;
+pub mod oracle;
+pub use oracle::*;

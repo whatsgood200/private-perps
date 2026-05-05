@@ -1,22 +1,25 @@
 [package]
-name = "private-perps"
+name    = "private-perps"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "private_perps"
+name       = "private_perps"
 
 [features]
-no-entrypoint = []
-no-idl = []
+no-entrypoint  = []
+no-idl         = []
 no-log-ix-name = []
-cpi = ["no-entrypoint"]
-default = []
-idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+cpi            = ["no-entrypoint"]
+default        = []
+idl-build      = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
 
 [dependencies]
 anchor-lang = { workspace = true }
-anchor-spl = { workspace = true }
-bytemuck = { workspace = true }
-thiserror = { workspace = true }
+anchor-spl  = { workspace = true }
+bytemuck    = { workspace = true }
+thiserror   = { workspace = true }
+
+[dependencies.solana-program]
+version = "=2.1.0"
