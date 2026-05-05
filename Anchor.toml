@@ -6,7 +6,7 @@ seeds     = false
 skip-lint = false
 
 [programs.devnet]
-private_perps = "5ZVFRvDMyq3ThqSEz7TxenA6mRasM7y3PK2efFRqKEYx"
+private_perps = "Bn8G8L4egZaL1LeWx2QZRFSRVWJWL8dEkj35i392tUmJ"
 
 [registry]
 url = "https://api.apr.dev"
