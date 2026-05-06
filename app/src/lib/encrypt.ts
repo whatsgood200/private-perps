@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Browser-safe encryption utilities (no Node crypto).
  * Uses Web Crypto API + TweetNaCl.

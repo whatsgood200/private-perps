@@ -1,0 +1,12 @@
+[toolchain]
+arcium_version = "0.9.7"
+
+[programs.devnet]
+encrypted_ixs = "encrypted-ixs"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[clusters.devnet]
+cluster_offset = 1

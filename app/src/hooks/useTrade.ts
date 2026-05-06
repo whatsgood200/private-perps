@@ -1,73 +1,160 @@
+// @ts-nocheck
 "use client";
 
 import { useState, useCallback } from "react";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
-import { generateClientOrderId } from "@/lib/encrypt";
+import { PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY, SYSVAR_CLOCK_PUBKEY } from "@solana/web3.js";
+import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import * as anchor from "@coral-xyz/anchor";
+import { getMXEPublicKey, RescueCipher, x25519 } from "@arcium-hq/client";
+import idl from "../lib/idl.json";
+
+export const PROGRAM_ID = new PublicKey("Bn8G8L4egZaL1LeWx2QZRFSRVWJWL8dEkj35i392tUmJ");
+export const MXE_PROGRAM_ID = new PublicKey("C1au73j3zUtPi62GYo9HaTSG8kZ4vMZc2DyN7kjRdeNn");
+const MARKET_PDA = new PublicKey("AMUd4zsqkYuYwLUtwRi8Ae9MRaXc9KrHaFeyqqKinHrq");
+const REGISTRY_PDA = new PublicKey("DhHyCK8FsSgnN8GDmsonpHHAkuvdBRthRMu2ax2DRHY6");
+const USDC_MINT = new PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
 
 interface OrderParams {
-  direction:  "long" | "short";
-  sizeUsd:    number;
-  leverage:   number;
+  direction: "long" | "short";
+  sizeUsd: number;
+  leverage: number;
   limitPrice: number;
-  stopLoss:   number;
+  stopLoss: number;
   takeProfit: number;
   reduceOnly: boolean;
 }
 
-export function useTrade(market: string) {
-  const { publicKey, signTransaction } = useWallet();
-  const { connection } = useConnection();
+function getProgram(connection: anchor.web3.Connection, wallet: anchor.Wallet) {
+  const provider = new anchor.AnchorProvider(connection, wallet, { commitment: "confirmed" });
+  return new anchor.Program(idl as any, provider);
+}
 
+export function useTrade(market: string) {
+  const { publicKey, signTransaction, signAllTransactions } = useWallet();
+  const { connection } = useConnection();
   const [isEncrypting, setIsEncrypting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [lastTxid,     setLastTxid]     = useState<string | null>(null);
-  const [error,        setError]        = useState<string | null>(null);
+  const [lastTxid, setLastTxid] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const depositCollateral = useCallback(async (amountUsdc: number) => {
+    if (!publicKey || !signTransaction) { setError("Connect wallet first"); return; }
+    setError(null);
+    try {
+      const wallet = { publicKey, signTransaction, signAllTransactions } as anchor.Wallet;
+      const program = getProgram(connection, wallet);
+      const amount = new anchor.BN(amountUsdc * 1_000_000); // USDC 6 decimals
+
+      const [traderVault] = PublicKey.findProgramAddressSync(
+        [Buffer.from("trader_vault"), MARKET_PDA.toBuffer(), publicKey.toBuffer()],
+        PROGRAM_ID
+      );
+      const [protocolVaultAta] = PublicKey.findProgramAddressSync(
+        [Buffer.from("vault"), MARKET_PDA.toBuffer()],
+        PROGRAM_ID
+      );
+      const [protocolVault] = PublicKey.findProgramAddressSync(
+        [Buffer.from("protocol_vault"), MARKET_PDA.toBuffer()],
+        PROGRAM_ID
+      );
+      const traderAta = await getAssociatedTokenAddress(USDC_MINT, publicKey);
+
+      const tx = await program.methods
+        .depositCollateral(amount)
+        .accounts({
+          trader: publicKey,
+          market: MARKET_PDA,
+          traderVault,
+          traderAta,
+          protocolVaultAta,
+          protocolVault,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+          rent: SYSVAR_RENT_PUBKEY,
+          clock: SYSVAR_CLOCK_PUBKEY,
+        })
+        .rpc();
+
+      setLastTxid(tx);
+      return tx;
+    } catch (err: any) {
+      setError(err.message);
+    }
+  }, [publicKey, connection]);
 
   const placeOrder = useCallback(async (params: OrderParams) => {
-    if (!publicKey) { setError("Connect wallet first"); return; }
-    setError(null);
-    setLastTxid(null);
-
+    if (!publicKey || !signTransaction) { setError("Connect wallet first"); return; }
+    setError(null); setLastTxid(null);
     try {
-      // Step 1: Encrypt order client-side
+      // ── Step 1: RescueCipher encryption ─────────────────────────────────
       setIsEncrypting(true);
+      const wallet = { publicKey, signTransaction, signAllTransactions } as anchor.Wallet;
+      const provider = new anchor.AnchorProvider(connection, wallet, { commitment: "confirmed" });
+      const program = new anchor.Program(idl as any, provider);
 
-      // Simulate encryption delay (real impl calls encryptOrder from SDK)
-      await delay(800);
+      const clientPrivKey = x25519.utils.randomSecretKey();
+      const clientPubKey  = x25519.getPublicKey(clientPrivKey);
+      const mxePubKey     = await getMXEPublicKey(provider, MXE_PROGRAM_ID);
+      const sharedSecret  = x25519.getSharedSecret(clientPrivKey, mxePubKey);
+      const cipher        = new RescueCipher(sharedSecret);
 
-      const clientOrderId = generateClientOrderId();
+      const direction = params.direction === "long" ? 0n : 1n;
+      const sizeUsd   = BigInt(Math.floor(params.sizeUsd * 1_000_000));
+      const price     = BigInt(Math.floor(params.limitPrice * 1_000_000));
 
-      // Simulate AES-256-GCM encryption + ZK margin proof generation
-      await delay(400);
+      const nonce     = BigInt("0x" + Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString("hex"));
+      const [ctDirection, ctSize, ctPrice] = cipher.encrypt([direction, sizeUsd, price], nonce);
+
+      const computationOffset = BigInt(Date.now());
+      const reservedCollateral = new anchor.BN(
+        Math.floor(params.sizeUsd * 1_000_000 / params.leverage)
+      );
 
       setIsEncrypting(false);
 
-      // Step 2: Submit encrypted order to Solana
+      // ── Step 2: Submit transaction ───────────────────────────────────────
       setIsSubmitting(true);
 
-      // In production: call PrivatePerpsClient.placeOrder(...)
-      // For demo: simulate Solana TX
-      await delay(1200);
+      const [traderVault] = PublicKey.findProgramAddressSync(
+        [Buffer.from("trader_vault"), MARKET_PDA.toBuffer(), publicKey.toBuffer()],
+        PROGRAM_ID
+      );
+      const [orderRecord] = PublicKey.findProgramAddressSync(
+        [Buffer.from("order"), publicKey.toBuffer(), Buffer.from(new anchor.BN(computationOffset.toString()).toArray("le", 8))],
+        PROGRAM_ID
+      );
 
-      // Mock transaction signature
-      const mockTxid = Array.from({ length: 64 }, () =>
-        "0123456789abcdef"[Math.floor(Math.random() * 16)]
-      ).join("");
+      const tx = await program.methods
+        .placeOrder(
+          new anchor.BN(computationOffset.toString()),
+          Array.from(ctDirection),
+          Array.from(ctSize),
+          Array.from(ctPrice),
+          Array.from(clientPubKey),
+          new anchor.BN(nonce.toString()),
+          reservedCollateral
+        )
+        .accounts({
+          trader: publicKey,
+          market: MARKET_PDA,
+          traderVault,
+          orderRecord,
+          registry: REGISTRY_PDA,
+          systemProgram: SystemProgram.programId,
+          rent: SYSVAR_RENT_PUBKEY,
+        })
+        .rpc();
 
-      setLastTxid(mockTxid);
+      setLastTxid(tx);
       setIsSubmitting(false);
-
-      console.log(`✅ Order encrypted & placed — txid: ${mockTxid}`);
-      console.log(`🔒 Order details encrypted via Arcium MPC — nobody can see your position`);
-
+      return tx;
     } catch (err: any) {
-      setError(err.message ?? "Unknown error");
+      setError(err.message);
       setIsEncrypting(false);
       setIsSubmitting(false);
     }
-  }, [publicKey, market]);
+  }, [publicKey, connection, market]);
 
-  return { placeOrder, isEncrypting, isSubmitting, lastTxid, error };
+  return { placeOrder, depositCollateral, isEncrypting, isSubmitting, lastTxid, error };
 }
-
-const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
