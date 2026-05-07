@@ -6,7 +6,7 @@ import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY, SYSVAR_CLOCK_PUBKEY } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import * as anchor from "@coral-xyz/anchor";
-import { getMXEPublicKey, RescueCipher, x25519 } from "@arcium-hq/client";
+// arcium loaded dynamically in placeOrder()
 import idl from "../lib/idl.json";
 
 export const PROGRAM_ID = new PublicKey("Bn8G8L4egZaL1LeWx2QZRFSRVWJWL8dEkj35i392tUmJ");
@@ -93,6 +93,7 @@ export function useTrade(market: string) {
       const provider = new anchor.AnchorProvider(connection, wallet, { commitment: "confirmed" });
       const program = new anchor.Program(idl as any, provider);
 
+      const { getMXEPublicKey, RescueCipher, x25519 } = await import("@arcium-hq/client");
       const clientPrivKey = x25519.utils.randomSecretKey();
       const clientPubKey  = x25519.getPublicKey(clientPrivKey);
       const mxePubKey     = await getMXEPublicKey(provider, MXE_PROGRAM_ID);
