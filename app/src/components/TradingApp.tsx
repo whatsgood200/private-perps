@@ -4,11 +4,11 @@ import { Navbar } from "@/components/layout/Navbar";
 import { ArciumStatusBar } from "@/components/ui/ArciumStatusBar";
 import { MarketSelector } from "@/components/trading/MarketSelector";
 import { StatsBar } from "@/components/trading/StatsBar";
+import { PriceChart } from "@/components/trading/PriceChart";
 import { OrderBook } from "@/components/trading/OrderBook";
 import { TradingPanel } from "@/components/trading/TradingPanel";
 import { PositionsTable } from "@/components/trading/PositionsTable";
 import { PrivacyShield } from "@/components/ui/PrivacyShield";
-import { PriceChart } from "@/components/trading/PriceChart";
 
 class ErrorBoundary extends Component<{children: ReactNode}, {err: string|null}> {
   state = { err: null };
@@ -25,30 +25,31 @@ export default function TradingApp() {
   const [selectedMarket, setSelectedMarket] = useState("BTC-PERP");
   return (
     <ErrorBoundary>
-      <div style={{background:"#05050a",minHeight:"100vh"}}>
+      <div className="min-h-screen bg-void">
+        <div className="fixed inset-0 bg-radial-arcium pointer-events-none" />
         <Navbar />
         <ArciumStatusBar />
-        <main style={{padding:"80px 16px 32px",maxWidth:1600,margin:"0 auto"}}>
-          <div style={{display:"flex",flexDirection:"column",gap:12,marginTop:16}}>
+        <main className="relative z-10 pt-16 px-4 pb-8 max-w-[1600px] mx-auto">
+          <div className="flex flex-col gap-3 mt-4">
             <MarketSelector selected={selectedMarket} onChange={setSelectedMarket} />
             <StatsBar market={selectedMarket} />
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(12,1fr)",gap:12,marginTop:12}}>
-            <div style={{gridColumn:"span 8"}}>
+          <div className="grid grid-cols-12 gap-3 mt-3">
+            <div className="col-span-12 xl:col-span-8">
               <PriceChart market={selectedMarket} />
             </div>
-            <div style={{gridColumn:"span 2"}}>
+            <div className="col-span-12 xl:col-span-2">
               <OrderBook market={selectedMarket} />
             </div>
-            <div style={{gridColumn:"span 2"}}>
+            <div className="col-span-12 xl:col-span-2">
               <TradingPanel market={selectedMarket} />
             </div>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(12,1fr)",gap:12,marginTop:12}}>
-            <div style={{gridColumn:"span 8"}}>
+          <div className="grid grid-cols-12 gap-3 mt-3">
+            <div className="col-span-12 xl:col-span-8">
               <PositionsTable market={selectedMarket} />
             </div>
-            <div style={{gridColumn:"span 4"}}>
+            <div className="col-span-12 xl:col-span-4">
               <PrivacyShield />
             </div>
           </div>
