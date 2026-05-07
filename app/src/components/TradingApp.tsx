@@ -1,4 +1,18 @@
 "use client";
+import { Component, ReactNode } from "react";
+class ErrorBoundary extends Component<{children: ReactNode}, {error: string|null}> {
+  state = { error: null };
+  static getDerivedStateFromError(e: any) { return { error: e?.message || String(e) }; }
+  render() {
+    if (this.state.error) return (
+      <div style={{color:"#ff4444",padding:40,fontFamily:"monospace",whiteSpace:"pre-wrap",background:"#0a0a0a",minHeight:"100vh"}}>
+        <b>CLIENT ERROR:</b>{"
+"}{this.state.error}
+      </div>
+    );
+    return this.props.children;
+  }
+}
 import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { TradingPanel } from "@/components/trading/TradingPanel";
@@ -13,6 +27,7 @@ import { StatsBar } from "@/components/trading/StatsBar";
 export default function TradingApp() {
   const [selectedMarket, setSelectedMarket] = useState("BTC-PERP");
   return (
+    <ErrorBoundary>
     <div className="min-h-screen bg-void bg-grid-pattern bg-grid">
       <div className="fixed inset-0 bg-radial-arcium pointer-events-none" />
       <Navbar />
@@ -43,5 +58,6 @@ export default function TradingApp() {
         </div>
       </main>
     </div>
+    </ErrorBoundary>
   );
 }
