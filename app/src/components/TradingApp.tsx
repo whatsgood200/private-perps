@@ -8,6 +8,7 @@ import { OrderBook } from "@/components/trading/OrderBook";
 import { TradingPanel } from "@/components/trading/TradingPanel";
 import { PositionsTable } from "@/components/trading/PositionsTable";
 import { PrivacyShield } from "@/components/ui/PrivacyShield";
+import { PriceChart } from "@/components/trading/PriceChart";
 
 class ErrorBoundary extends Component<{children: ReactNode}, {err: string|null}> {
   state = { err: null };
@@ -34,7 +35,7 @@ export default function TradingApp() {
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(12,1fr)",gap:12,marginTop:12}}>
             <div style={{gridColumn:"span 8"}}>
-              <p style={{color:"green"}}>✅ PriceChart placeholder</p>
+              <PriceChart market={selectedMarket} />
             </div>
             <div style={{gridColumn:"span 2"}}>
               <OrderBook market={selectedMarket} />

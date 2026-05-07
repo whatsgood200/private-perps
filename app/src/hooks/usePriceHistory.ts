@@ -24,5 +24,5 @@ export function usePriceHistory(market: string) {
     setHistory(seed);
   }, [market]);
 
-  return { history };
+  return { candles: history, loading: false };
 }
