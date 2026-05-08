@@ -11,9 +11,9 @@ import idl from "../lib/idl.json";
 
 export const PROGRAM_ID = new PublicKey("Bn8G8L4egZaL1LeWx2QZRFSRVWJWL8dEkj35i392tUmJ");
 export const MXE_PROGRAM_ID = new PublicKey("C1au73j3zUtPi62GYo9HaTSG8kZ4vMZc2DyN7kjRdeNn");
-const MARKET_PDA = new PublicKey("AMUd4zsqkYuYwLUtwRi8Ae9MRaXc9KrHaFeyqqKinHrq");
+const MARKET_PDA = new PublicKey("3L2NBGd1nBGq4bS2QoeG4fLLo2U1KLrPKDWi45UgDEqX");
 const REGISTRY_PDA = new PublicKey("DhHyCK8FsSgnN8GDmsonpHHAkuvdBRthRMu2ax2DRHY6");
-const USDC_MINT = new PublicKey("4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU");
+const USDC_MINT = new PublicKey("8a5i4DRwfovoYjwMN3WqDCmX1aSDL23fh8Ku1kLQSBCs");
 
 interface OrderParams {
   direction: "long" | "short";
@@ -104,8 +104,9 @@ export function useTrade(market: string) {
       const sizeUsd   = BigInt(Math.floor(params.sizeUsd * 1_000_000));
       const price     = BigInt(Math.floor(params.limitPrice * 1_000_000));
 
-      const nonce     = BigInt("0x" + Buffer.from(crypto.getRandomValues(new Uint8Array(16))).toString("hex"));
-      const [ctDirection, ctSize, ctPrice] = cipher.encrypt([direction, sizeUsd, price], nonce);
+      const nonceBytes = crypto.getRandomValues(new Uint8Array(16));
+      const nonce     = BigInt("0x" + Buffer.from(nonceBytes).toString("hex"));
+      const [ctDirection, ctSize, ctPrice] = cipher.encrypt([direction, sizeUsd, price], nonceBytes);
 
       const computationOffset = BigInt(Date.now());
       const reservedCollateral = new anchor.BN(
@@ -122,7 +123,7 @@ export function useTrade(market: string) {
         PROGRAM_ID
       );
       const [orderRecord] = PublicKey.findProgramAddressSync(
-        [Buffer.from("order"), publicKey.toBuffer(), Buffer.from(new anchor.BN(computationOffset.toString()).toArray("le", 8))],
+        [Buffer.from("order"), MARKET_PDA.toBuffer(), publicKey.toBuffer(), Buffer.from(new anchor.BN(computationOffset.toString()).toArray("le", 8))],
         PROGRAM_ID
       );
 
