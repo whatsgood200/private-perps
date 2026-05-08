@@ -226,8 +226,16 @@ export function TradingPanel({ market }: { market: string }) {
 
         {/* Success */}
         {lastTxid && (
-          <div className="rounded-xl border border-profit/20 bg-profit/5 p-2.5 text-[10px] font-mono text-profit">
-            ✓ Order encrypted & placed on-chain
+          <div className="rounded-xl border border-profit/20 bg-profit/5 p-2.5 text-[10px] font-mono text-profit space-y-1">
+            <div>✓ Order encrypted & placed on-chain</div>
+            
+              href={`https://explorer.solana.com/tx/${lastTxid}?cluster=devnet`}
+              target="_blank"
+              rel="noreferrer"
+              className="underline opacity-70 hover:opacity-100"
+            >
+              View TX ↗
+            </a>
           </div>
         )}
 
@@ -243,7 +251,13 @@ export function TradingPanel({ market }: { market: string }) {
         {/* Deposit collateral */}
         {publicKey && depositTxid && (
           <div className="rounded-xl border border-profit/20 bg-profit/5 p-2 text-[10px] font-mono text-profit">
-            ✓ Collateral deposited
+            <div>✓ Collateral deposited</div>
+            {depositTxid && (
+              <a href={`https://explorer.solana.com/tx/${depositTxid}?cluster=devnet`}
+                target="_blank" rel="noreferrer" className="text-[10px] underline opacity-70 hover:opacity-100 block">
+                View deposit TX ↗
+              </a>
+            )}
           </div>
         )}
         {publicKey && !depositTxid && (

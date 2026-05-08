@@ -34,7 +34,7 @@ function genBook(basePrice: number) {
 }
 
 export function OrderBook({ market }: { market: string }) {
-  const BASE = market === "BTC-PERP" ? 65420 : market === "ETH-PERP" ? 3512 : 172;
+  const { markPrice: BASE } = useMarketStats(market);
   const [book, setBook] = useState(() => genBook(BASE));
   const [spread, setSpread] = useState(0.1);
 

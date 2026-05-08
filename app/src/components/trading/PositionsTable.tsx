@@ -80,7 +80,7 @@ export function PositionsTable({ market }: { market: string }) {
                   <td colSpan={9} className="px-4 py-12 text-center text-dim">
                     <div className="flex flex-col items-center gap-2">
                       <Shield size={24} className="text-arcium/40" />
-                      <span>No open positions</span>
+                      <span>No open positions — orders are encrypted via Arcium MPC</span>
                       <span className="text-[10px] text-arcium/50">
                         When you open positions, sizes & liquidation prices are encrypted via Arcium
                       </span>
