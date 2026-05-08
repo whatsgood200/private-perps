@@ -35,21 +35,21 @@ export default function TradingApp() {
             <StatsBar market={selectedMarket} />
           </div>
           <div className="grid grid-cols-12 gap-3 mt-3">
-            <div className="col-span-12 xl:col-span-8">
+            <div className="col-span-12 lg:col-span-8">
               <PriceChart market={selectedMarket} />
             </div>
-            <div className="col-span-12 xl:col-span-2">
+            <div className="col-span-12 lg:col-span-2">
               <OrderBook market={selectedMarket} />
             </div>
-            <div className="col-span-12 xl:col-span-2">
+            <div className="col-span-12 lg:col-span-2">
               <TradingPanel market={selectedMarket} />
             </div>
           </div>
           <div className="grid grid-cols-12 gap-3 mt-3">
-            <div className="col-span-12 xl:col-span-8">
+            <div className="col-span-12 lg:col-span-8">
               <PositionsTable market={selectedMarket} />
             </div>
-            <div className="col-span-12 xl:col-span-4">
+            <div className="col-span-12 lg:col-span-4">
               <PrivacyShield />
             </div>
           </div>
