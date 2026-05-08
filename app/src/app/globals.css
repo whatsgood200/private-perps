@@ -46,6 +46,7 @@ body::before {
   opacity: 0.4;
 }
 
+@layer components {
 /* ── Glass panels ──────────────────────────────────────────────────────── */
 .glass {
   background: rgba(13, 13, 26, 0.8);
@@ -123,4 +124,5 @@ body::before {
 .wallet-adapter-modal-wrapper {
   background: rgba(8, 8, 15, 0.98) !important;
   border: 1px solid rgba(124, 92, 252, 0.2) !important;
+}
 }

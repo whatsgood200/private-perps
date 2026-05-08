@@ -115,8 +115,26 @@ export function useTrade(market: string) {
 
       setIsEncrypting(false);
 
-      // ── Step 2: Submit transaction ───────────────────────────────────────
+      // ── Step 2: Ensure trader_vault exists (deposit $1 if needed) ──────────
       setIsSubmitting(true);
+      try {
+        const { TOKEN_PROGRAM_ID } = await import("@solana/spl-token");
+        const { getAssociatedTokenAddress } = await import("@solana/spl-token");
+        const traderAtaAddr = await getAssociatedTokenAddress(USDC_MINT, publicKey);
+        await program.methods
+          .depositCollateral(new anchor.BN(1_000_000))
+          .accounts({
+            trader: publicKey, market: MARKET_PDA,
+            traderVault: PublicKey.findProgramAddressSync([Buffer.from("trader_vault"), MARKET_PDA.toBuffer(), publicKey.toBuffer()], PROGRAM_ID)[0],
+            traderAta: traderAtaAddr,
+            protocolVaultAta: PublicKey.findProgramAddressSync([Buffer.from("vault"), MARKET_PDA.toBuffer()], PROGRAM_ID)[0],
+            protocolVault: PublicKey.findProgramAddressSync([Buffer.from("protocol_vault"), MARKET_PDA.toBuffer()], PROGRAM_ID)[0],
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: (await import("@solana/web3.js")).SystemProgram.programId,
+            rent: (await import("@solana/web3.js")).SYSVAR_RENT_PUBKEY,
+            clock: (await import("@solana/web3.js")).SYSVAR_CLOCK_PUBKEY,
+          }).rpc();
+      } catch (_) { /* vault already exists or no USDC — continue */ }
 
       const [traderVault] = PublicKey.findProgramAddressSync(
         [Buffer.from("trader_vault"), MARKET_PDA.toBuffer(), publicKey.toBuffer()],
