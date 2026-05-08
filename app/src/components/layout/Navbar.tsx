@@ -6,8 +6,8 @@ import Link from "next/link";
 
 export function Navbar() {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-16 glass border-b border-border/60">
-      <div className="max-w-[1600px] mx-auto h-full px-4 flex items-center justify-between">
+    <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:50,height:56,background:"rgba(5,5,8,0.9)",backdropFilter:"blur(20px)",borderBottom:"1px solid rgba(30,30,58,0.8)",display:"flex",alignItems:"center"}}>
+      <div style={{maxWidth:1600,margin:"0 auto",padding:"0 16px",display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",height:"100%"}}>
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="relative w-8 h-8">

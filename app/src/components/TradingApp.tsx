@@ -23,7 +23,7 @@ class ErrorBoundary extends Component<{children: ReactNode}, {err: string|null}>
 
 const S = {
   page: { background:"#050508", minHeight:"100vh", color:"#e8e8ff", fontFamily:"sans-serif" } as React.CSSProperties,
-  main: { padding:"72px 12px 32px", maxWidth:1600, margin:"0 auto" } as React.CSSProperties,
+  main: { padding:"100px 12px 32px", maxWidth:1600, margin:"0 auto" } as React.CSSProperties,
   topRow: { display:"flex", flexDirection:"column" as const, gap:8, marginTop:12 },
   grid: { display:"grid", gridTemplateColumns:"8fr 2fr 2fr", gap:8, marginTop:8 } as React.CSSProperties,
   gridBottom: { display:"grid", gridTemplateColumns:"8fr 4fr", gap:8, marginTop:8 } as React.CSSProperties,

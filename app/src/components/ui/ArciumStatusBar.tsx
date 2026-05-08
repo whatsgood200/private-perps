@@ -48,8 +48,7 @@ export function ArciumStatusBar() {
   };
 
   return (
-    <div className="fixed top-16 left-0 right-0 z-40 border-b border-border/40"
-      style={{ background: "rgba(8,8,15,0.9)", backdropFilter: "blur(12px)" }}>
+    <div style={{position:"fixed",top:56,left:0,right:0,zIndex:40,borderBottom:"1px solid rgba(30,30,58,0.6)",background:"rgba(8,8,15,0.9)",backdropFilter:"blur(12px)"}}>
       <div className="max-w-[1600px] mx-auto px-4 h-9 flex items-center gap-6 text-xs overflow-x-auto">
 
         {/* Arcium MXE label */}
