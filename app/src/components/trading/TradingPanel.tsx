@@ -6,6 +6,7 @@ import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { Lock, Shield, ChevronDown, Info, Zap, AlertTriangle } from "lucide-react";
 import { clsx } from "clsx";
 import { useTrade } from "@/hooks/useTrade";
+import { useMarketStats } from "@/hooks/useMarketStats";
 import { EncryptionProgress } from "@/components/ui/EncryptionProgress";
 
 type Side      = "long" | "short";
@@ -15,7 +16,7 @@ const LEVERAGES = [2, 5, 10, 20];
 
 export function TradingPanel({ market }: { market: string }) {
   const { publicKey } = useWallet();
-  const { placeOrder, isEncrypting, isSubmitting, lastTxid, error } = useTrade(market);
+  const { placeOrder, depositCollateral, isEncrypting, isSubmitting, isDepositing, lastTxid, depositTxid, error } = useTrade(market);
 
   const [side,       setSide]       = useState<Side>("long");
   const [orderType,  setOrderType]  = useState<OrderType>("market");
@@ -27,7 +28,7 @@ export function TradingPanel({ market }: { market: string }) {
   const [showAdv,    setShowAdv]    = useState(false);
 
   // Derived values
-  const markPrice  = market === "BTC-PERP" ? 65_420 : market === "ETH-PERP" ? 3_512 : 172;
+  const { markPrice } = useMarketStats(market);
   const sizeNum    = parseFloat(size) || 0;
   const notional   = sizeNum * (orderType === "limit" && limitPrice ? parseFloat(limitPrice) : markPrice);
   const margin     = notional / leverage;
@@ -213,7 +214,7 @@ export function TradingPanel({ market }: { market: string }) {
             </div>
             <div className="flex justify-between">
               <span className="text-dim">Order Encryption</span>
-              <span className="text-profit">AES-256-GCM ✓</span>
+              <span className="text-profit">RescueCipher ✓</span>
             </div>
           </div>
         )}
@@ -236,6 +237,23 @@ export function TradingPanel({ market }: { market: string }) {
             <AlertTriangle size={10} className="shrink-0 mt-0.5" />
             {error}
           </div>
+        )}
+
+
+        {/* Deposit collateral */}
+        {publicKey && depositTxid && (
+          <div className="rounded-xl border border-profit/20 bg-profit/5 p-2 text-[10px] font-mono text-profit">
+            ✓ Collateral deposited
+          </div>
+        )}
+        {publicKey && !depositTxid && (
+          <button
+            onClick={() => depositCollateral(50)}
+            disabled={isDepositing}
+            className="w-full py-2 rounded-xl font-mono text-xs border border-arcium/30 bg-arcium/5 text-arcium-bright hover:bg-arcium/10 transition-all disabled:opacity-40"
+          >
+            {isDepositing ? "Depositing..." : "① Deposit 50 USDC Collateral"}
+          </button>
         )}
 
         {/* Submit */}

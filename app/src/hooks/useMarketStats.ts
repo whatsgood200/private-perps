@@ -1,158 +1,146 @@
 "use client";
+import { useState, useEffect } from "react";
 
-import { useState, useEffect, useRef } from "react";
-
-// ─── useMarketStats ────────────────────────────────────────────────────────────
-
-const BASE_PRICES: Record<string, number> = {
-  "BTC-PERP": 65_420,
-  "ETH-PERP":  3_512,
-  "SOL-PERP":    172,
-  "JUP-PERP":    1.24,
-  "WIF-PERP":    3.11,
+const COINGECKO_IDS: Record<string, string> = {
+  "BTC-PERP": "bitcoin",
+  "ETH-PERP": "ethereum",
+  "SOL-PERP": "solana",
+  "JUP-PERP": "jupiter-exchange-solana",
+  "WIF-PERP": "dogwifcoin",
 };
 
-export function useMarketStats(market: string) {
-  const base = BASE_PRICES[market] ?? 100;
+const FALLBACK: Record<string, number> = {
+  "BTC-PERP": 65420, "ETH-PERP": 3512,
+  "SOL-PERP": 172, "JUP-PERP": 1.24, "WIF-PERP": 3.11,
+};
 
-  const [stats, setStats] = useState({
-    markPrice:    base,
-    indexPrice:   base * 0.9999,
-    priceChange:  2.34,
-    volume24h:    "1.24B",
-    openInterest: "🔒 Encrypted",
-    fundingRate:  0.0021,
-    nextFunding:  "in 42m",
-    high24h:      base * 1.03,
-    low24h:       base * 0.97,
+export interface MarketStats {
+  markPrice: number;
+  indexPrice: number;
+  priceChange: number;
+  volume24h: string;
+  openInterest: string;
+  fundingRate: number;
+  nextFunding: string;
+  high24h: number;
+  low24h: number;
+}
+
+export function useMarketStats(market: string) {
+  const id = COINGECKO_IDS[market] ?? "bitcoin";
+  const fallback = FALLBACK[market] ?? 100;
+
+  const [stats, setStats] = useState<MarketStats>({
+    markPrice: fallback,
+    indexPrice: fallback,
+    priceChange: 0,
+    volume24h: "...",
+    openInterest: "🔒 Private",
+    fundingRate: 0.0021,
+    nextFunding: "in 42m",
+    high24h: fallback,
+    low24h: fallback,
   });
 
   useEffect(() => {
-    const b = BASE_PRICES[market] ?? 100;
-    const iv = setInterval(() => {
-      const drift = (Math.random() - 0.499) * b * 0.0003;
-      setStats((prev) => ({
-        ...prev,
-        markPrice:  +(prev.markPrice + drift).toFixed(2),
-        indexPrice: +(prev.markPrice + drift * 0.99).toFixed(2),
-      }));
-    }, 1500);
-    return () => clearInterval(iv);
-  }, [market]);
+    let cancelled = false;
+    async function fetch_price() {
+      try {
+        const res = await fetch(
+          `https://api.coingecko.com/api/v3/coins/${id}?localization=false&tickers=false&community_data=false&developer_data=false`,
+          { headers: { Accept: "application/json" } }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        const md = data.market_data;
+        const price = md.current_price.usd;
+        const vol = md.total_volume.usd;
+        const volStr = vol >= 1e9 ? (vol / 1e9).toFixed(2) + "B"
+          : vol >= 1e6 ? (vol / 1e6).toFixed(0) + "M" : vol.toFixed(0);
+        setStats({
+          markPrice: price,
+          indexPrice: +(price * 0.9999).toFixed(2),
+          priceChange: +(md.price_change_percentage_24h ?? 0).toFixed(2),
+          volume24h: volStr,
+          openInterest: "🔒 Private",
+          fundingRate: 0.0021,
+          nextFunding: "in 42m",
+          high24h: +(md.high_24h.usd),
+          low24h: +(md.low_24h.usd),
+        });
+      } catch (_) {}
+    }
+    fetch_price();
+    const iv = setInterval(fetch_price, 30_000);
+    return () => { cancelled = true; clearInterval(iv); };
+  }, [id]);
 
   return stats;
 }
 
-// ─── usePriceHistory ──────────────────────────────────────────────────────────
-
 export interface Candle {
-  time:   string;
-  open:   number;
-  high:   number;
-  low:    number;
-  close:  number;
+  time: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
   volume: number;
 }
 
-function genCandles(base: number, n: number, tf: string): Candle[] {
-  const candles: Candle[] = [];
-  let price = base;
-  const now = Date.now();
-  const tfMs: Record<string, number> = {
-    "1m": 60_000, "5m": 300_000, "15m": 900_000,
-    "1h": 3_600_000, "4h": 14_400_000, "1d": 86_400_000,
-  };
-  const ms = tfMs[tf] ?? 3_600_000;
-
-  for (let i = n; i >= 0; i--) {
-    const t    = new Date(now - i * ms);
-    const open = price;
-    const chg  = (Math.random() - 0.48) * base * 0.008;
-    const close = Math.max(open * 0.8, open + chg);
-    const high  = Math.max(open, close) * (1 + Math.random() * 0.004);
-    const low   = Math.min(open, close) * (1 - Math.random() * 0.004);
-    const vol   = Math.floor(Math.random() * 500 + 100);
-
-    candles.push({
-      time:  tf === "1d"
-        ? t.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-        : t.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
-      open: +open.toFixed(2),
-      high: +high.toFixed(2),
-      low:  +low.toFixed(2),
-      close: +close.toFixed(2),
-      volume: vol,
-    });
-
-    price = close;
-  }
-  return candles;
-}
-
-export function usePriceHistory(market: string, tf: string) {
-  const base = BASE_PRICES[market] ?? 100;
-  const [candles, setCandles] = useState<Candle[]>(() => genCandles(base, 60, tf));
-  const [loading, setLoading] = useState(false);
+export function usePriceHistory(market: string, tf = "1h") {
+  const id = COINGECKO_IDS[market] ?? "bitcoin";
+  const fallback = FALLBACK[market] ?? 100;
+  const [candles, setCandles] = useState<Candle[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
-    const t = setTimeout(() => {
-      setCandles(genCandles(base, 60, tf));
-      setLoading(false);
-    }, 300);
-    return () => clearTimeout(t);
-  }, [market, tf]);
-
-  // Live tick
-  useEffect(() => {
-    const iv = setInterval(() => {
-      setCandles((prev) => {
-        if (!prev.length) return prev;
-        const last   = prev[prev.length - 1];
-        const drift  = (Math.random() - 0.499) * base * 0.0005;
-        const newClose = +(last.close + drift).toFixed(2);
-        const updated  = {
-          ...last,
-          close: newClose,
-          high:  Math.max(last.high, newClose),
-          low:   Math.min(last.low,  newClose),
-        };
-        return [...prev.slice(0, -1), updated];
-      });
-    }, 2000);
-    return () => clearInterval(iv);
-  }, [market]);
+    async function load() {
+      try {
+        const days = tf === "1m" || tf === "5m" ? 1
+          : tf === "15m" || tf === "1h" ? 1
+          : tf === "4h" ? 7 : 30;
+        const res = await fetch(
+          `https://api.coingecko.com/api/v3/coins/${id}/ohlc?vs_currency=usd&days=${days}`,
+          { headers: { Accept: "application/json" } }
+        );
+        if (!res.ok) throw new Error("API error");
+        const data: number[][] = await res.json();
+        if (cancelled) return;
+        // CoinGecko OHLC: [timestamp, open, high, low, close]
+        const result: Candle[] = data.slice(-80).map((d) => {
+          const t = new Date(d[0]);
+          return {
+            time: t.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+            open: d[1], high: d[2], low: d[3], close: d[4],
+            volume: 0,
+          };
+        });
+        setCandles(result);
+      } catch (_) {
+        // fallback to simple price line if OHLC fails
+        if (!cancelled) {
+          const now = Date.now();
+          setCandles(Array.from({ length: 60 }, (_, i) => ({
+            time: new Date(now - (59 - i) * 3_600_000)
+              .toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+            open: fallback, high: fallback * 1.002,
+            low: fallback * 0.998, close: fallback, volume: 0,
+          })));
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [id, tf]);
 
   return { candles, loading };
 }
 
-// ─── usePositions ─────────────────────────────────────────────────────────────
-
-export interface MockPosition {
-  id:           string;
-  market:       string;
-  side:         "long" | "short";
-  size:         number;
-  entryPrice:   number;
-  markPrice:    number;
-  unrealisedPnl: number;
-  margin:       number;
-}
-
-export interface MockOrder {
-  id:     string;
-  market: string;
-  type:   string;
-  side:   "long" | "short";
-  price?: number;
-  status: string;
-}
-
 export function usePositions(market: string) {
-  // Demo: empty by default (wallet not connected in demo)
-  const [positions] = useState<MockPosition[]>([]);
-  const [orders]    = useState<MockOrder[]>([]);
-  const [loading]   = useState(false);
-
-  return { positions, orders, loading };
+  return { positions: [], orders: [], loading: false };
 }
