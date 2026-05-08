@@ -228,12 +228,9 @@ export function TradingPanel({ market }: { market: string }) {
         {lastTxid && (
           <div className="rounded-xl border border-profit/20 bg-profit/5 p-2.5 text-[10px] font-mono text-profit space-y-1">
             <div>✓ Order encrypted & placed on-chain</div>
-            
-              href={`https://explorer.solana.com/tx/${lastTxid}?cluster=devnet`}
-              target="_blank"
-              rel="noreferrer"
-              className="underline opacity-70 hover:opacity-100"
-            >
+            <a href={`https://explorer.solana.com/tx/${lastTxid}?cluster=devnet`}
+              target="_blank" rel="noreferrer"
+              className="underline opacity-70 hover:opacity-100 block text-[10px]">
               View TX ↗
             </a>
           </div>
