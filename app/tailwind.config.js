@@ -72,5 +72,11 @@ module.exports = {
       },
     },
   },
+  safelist: [
+    { pattern: /bg-(void|abyss|surface|panel|arcium|profit|loss|warn)/ },
+    { pattern: /text-(text|ghost|dim|muted|arcium|profit|loss|warn|arcium-bright)/ },
+    { pattern: /border-(border|arcium|profit|loss)/ },
+    'glass', 'glass-bright', 'arcium-glow', 'bg-grid',
+  ],
   plugins: [],
 };

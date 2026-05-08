@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { useWallet, useConnection, useAnchorWallet } from "@solana/wallet-adapter-react";
 import { PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY, SYSVAR_CLOCK_PUBKEY } from "@solana/web3.js";
 import { getAssociatedTokenAddress, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import * as anchor from "@coral-xyz/anchor";
@@ -31,7 +31,8 @@ function getProgram(connection: anchor.web3.Connection, wallet: anchor.Wallet) {
 }
 
 export function useTrade(market: string) {
-  const { publicKey, signTransaction, signAllTransactions } = useWallet();
+  const { publicKey } = useWallet();
+  const anchorWallet = useAnchorWallet();
   const { connection } = useConnection();
   const [isEncrypting, setIsEncrypting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,11 +40,10 @@ export function useTrade(market: string) {
   const [error, setError] = useState<string | null>(null);
 
   const depositCollateral = useCallback(async (amountUsdc: number) => {
-    if (!publicKey || !signTransaction) { setError("Connect wallet first"); return; }
+    if (!publicKey || !anchorWallet) { setError("Connect wallet first"); return; }
     setError(null);
     try {
-      const wallet = { publicKey, signTransaction, signAllTransactions } as anchor.Wallet;
-      const program = getProgram(connection, wallet);
+      const program = getProgram(connection, anchorWallet);
       const amount = new anchor.BN(amountUsdc * 1_000_000); // USDC 6 decimals
 
       const [traderVault] = PublicKey.findProgramAddressSync(
@@ -84,13 +84,12 @@ export function useTrade(market: string) {
   }, [publicKey, connection]);
 
   const placeOrder = useCallback(async (params: OrderParams) => {
-    if (!publicKey || !signTransaction) { setError("Connect wallet first"); return; }
+    if (!publicKey || !anchorWallet) { setError("Connect wallet first"); return; }
     setError(null); setLastTxid(null);
     try {
       // ── Step 1: RescueCipher encryption ─────────────────────────────────
       setIsEncrypting(true);
-      const wallet = { publicKey, signTransaction, signAllTransactions } as anchor.Wallet;
-      const provider = new anchor.AnchorProvider(connection, wallet, { commitment: "confirmed" });
+      const provider = new anchor.AnchorProvider(connection, anchorWallet, { commitment: "confirmed" });
       const program = new anchor.Program(idl as any, provider);
 
       const { getMXEPublicKey, RescueCipher, x25519 } = await import("@arcium-hq/client");

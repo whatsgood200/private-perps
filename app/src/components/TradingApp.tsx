@@ -14,42 +14,34 @@ class ErrorBoundary extends Component<{children: ReactNode}, {err: string|null}>
   state = { err: null };
   static getDerivedStateFromError(e: any) { return { err: e?.message ?? String(e) }; }
   render() {
-    if (this.state.err) {
-      return <pre style={{color:"red",padding:40,background:"#050508",minHeight:"100vh",fontSize:12,whiteSpace:"pre-wrap"}}>{this.state.err}</pre>;
-    }
+    if (this.state.err) return (
+      <pre style={{color:"red",padding:40,background:"#050508",minHeight:"100vh",fontSize:12}}>{this.state.err}</pre>
+    );
     return this.props.children;
   }
 }
 
-const S = {
-  page: { background:"#050508", minHeight:"100vh", color:"#e8e8ff", fontFamily:"sans-serif" } as React.CSSProperties,
-  main: { padding:"100px 12px 32px", maxWidth:1600, margin:"0 auto" } as React.CSSProperties,
-  topRow: { display:"flex", flexDirection:"column" as const, gap:8, marginTop:12 },
-  grid: { display:"grid", gridTemplateColumns:"8fr 2fr 2fr", gap:8, marginTop:8 } as React.CSSProperties,
-  gridBottom: { display:"grid", gridTemplateColumns:"8fr 4fr", gap:8, marginTop:8 } as React.CSSProperties,
-};
-
 export default function TradingApp() {
-  const [selectedMarket, setSelectedMarket] = useState("BTC-PERP");
+  const [market, setMarket] = useState("BTC-PERP");
   return (
     <ErrorBoundary>
-      <div style={S.page}>
-        <div style={{position:"fixed",inset:0,background:"radial-gradient(ellipse at 50% 0%, rgba(124,92,252,0.12) 0%, transparent 70%)",pointerEvents:"none"}} />
+      <div className="min-h-screen bg-void">
+        <div className="fixed inset-0 bg-radial-arcium pointer-events-none z-0" />
         <Navbar />
         <ArciumStatusBar />
-        <main style={S.main}>
-          <div style={S.topRow}>
-            <MarketSelector selected={selectedMarket} onChange={setSelectedMarket} />
-            <StatsBar market={selectedMarket} />
+        <main className="relative z-10 pt-24 px-3 pb-8 max-w-[1600px] mx-auto">
+          <div className="flex flex-col gap-2 mt-2">
+            <MarketSelector selected={market} onChange={setMarket} />
+            <StatsBar market={market} />
           </div>
-          <div style={S.grid}>
-            <div><PriceChart market={selectedMarket} /></div>
-            <div><OrderBook market={selectedMarket} /></div>
-            <div><TradingPanel market={selectedMarket} /></div>
+          <div className="grid grid-cols-12 gap-2 mt-2">
+            <div className="col-span-8"><PriceChart market={market} /></div>
+            <div className="col-span-2"><OrderBook market={market} /></div>
+            <div className="col-span-2"><TradingPanel market={market} /></div>
           </div>
-          <div style={S.gridBottom}>
-            <div><PositionsTable market={selectedMarket} /></div>
-            <div><PrivacyShield /></div>
+          <div className="grid grid-cols-12 gap-2 mt-2">
+            <div className="col-span-8"><PositionsTable market={market} /></div>
+            <div className="col-span-4"><PrivacyShield /></div>
           </div>
         </main>
       </div>
