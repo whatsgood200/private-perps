@@ -1,4 +1,5 @@
 "use client";
+import { useMarketStats } from "@/hooks/useMarketStats";
 import { Component, ReactNode, useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { ArciumStatusBar } from "@/components/ui/ArciumStatusBar";
@@ -23,6 +24,7 @@ class ErrorBoundary extends Component<{children: ReactNode}, {err: string|null}>
 
 export default function TradingApp() {
   const [market, setMarket] = useState("BTC-PERP");
+  const { markPrice } = useMarketStats(market);
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-void">
@@ -36,7 +38,7 @@ export default function TradingApp() {
           </div>
           <div className="grid grid-cols-12 gap-2 mt-2" style={{display:"grid",gridTemplateColumns:"8fr 2fr 2fr",gap:8,marginTop:8}}>
             <div className="col-span-8"><PriceChart market={market} /></div>
-            <div className="col-span-2"><OrderBook market={market} /></div>
+            <div className="col-span-2"><OrderBook market={market} markPrice={markPrice} /></div>
             <div className="col-span-2"><TradingPanel market={market} /></div>
           </div>
           <div className="grid grid-cols-12 gap-2 mt-2" style={{display:"grid",gridTemplateColumns:"8fr 2fr 2fr",gap:8,marginTop:8}}>

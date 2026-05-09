@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useMarketStats } from "@/hooks/useMarketStats";
+
 import { Lock } from "lucide-react";
 import { clsx } from "clsx";
 
@@ -34,8 +34,8 @@ function genBook(basePrice: number) {
   return { asks, bids };
 }
 
-export function OrderBook({ market }: { market: string }) {
-  const { markPrice: BASE } = useMarketStats(market);
+export function OrderBook({ market, markPrice }: { market: string; markPrice?: number }) {
+  const BASE = markPrice ?? 65420;
   const [book, setBook] = useState(() => genBook(BASE));
   const [spread, setSpread] = useState(0.1);
   useEffect(() => { setBook(genBook(BASE)); }, [BASE]);

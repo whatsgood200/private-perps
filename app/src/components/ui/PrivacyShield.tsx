@@ -8,7 +8,7 @@ const COMPARISONS = [
   {
     aspect: "Position Size",
     public: { label: "Fully visible", bad: true  },
-    private: { label: "Encrypted (AES-256-GCM)", bad: false },
+    private: { label: "Encrypted (RescueCipher)", bad: false },
   },
   {
     aspect: "Trade Direction",
@@ -123,7 +123,7 @@ export function PrivacyShield() {
               {
                 n: "1", icon: Lock, color: "text-arcium-bright",
                 title: "Client Encryption",
-                desc: "Your order (size, direction, price, SL/TP) is encrypted with AES-256-GCM using the Arcium network's ephemeral public key before any network call. Plaintext never leaves your browser.",
+                desc: "Your order (size, direction, price, SL/TP) is encrypted with RescueCipher using the Arcium network's ephemeral public key before any network call. Plaintext never leaves your browser.",
               },
               {
                 n: "2", icon: Cpu, color: "text-warn",
