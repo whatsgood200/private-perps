@@ -13,11 +13,10 @@ const THRESHOLD  = 4;
 
 async function fetchMempoolCount(): Promise<number> {
   try {
-    const { getMempoolAccAddress, getClusterAccAddress } = await import("@arcium-hq/client");
+    const { getMempoolAccAddress } = await import("@arcium-hq/client");
     const conn = new Connection(RPC, "confirmed");
     const mxePk = new PublicKey(MXE_PROGRAM_ID);
-    const clusterAcc = getClusterAccAddress(mxePk, CLUSTER_OFFSET);
-    const mempoolAcc = getMempoolAccAddress(mxePk, CLUSTER_OFFSET);
+    const mempoolAcc = getMempoolAccAddress(CLUSTER_OFFSET);
     const info = await conn.getAccountInfo(mempoolAcc);
     if (!info) return 0;
     // Mempool account exists — parse computation count from data
