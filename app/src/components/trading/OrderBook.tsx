@@ -8,10 +8,10 @@ interface Level { price: number; size: string; total: number; pct: number }
 
 function formatPrice(p: number): string {
   if (p <= 0) return "—";
-  if (p < 0.01) return "$" + p.toFixed(6);
-  if (p < 1) return "$" + p.toFixed(4);
-  if (p < 100) return "$" + p.toFixed(2);
-  return "$" + p.toLocaleString("en-US", { maximumFractionDigits: 1 });
+  if (p < 0.01) return p.toFixed(6);
+  if (p < 1) return p.toFixed(4);
+  if (p < 100) return p.toFixed(2);
+  return p.toLocaleString("en-US", { maximumFractionDigits: 1 });
 }
 
 function genBook(base: number): { asks: Level[]; bids: Level[] } {
