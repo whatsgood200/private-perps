@@ -43,6 +43,10 @@ export function useMarketStats(market: string) {
   });
 
   useEffect(() => {
+    setStats(prev => ({ ...prev, markPrice: fallback, indexPrice: fallback }));
+  }, [market]);
+
+    useEffect(() => {
     let cancelled = false;
     async function fetch_price() {
       try {

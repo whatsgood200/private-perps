@@ -8,6 +8,7 @@ import { clsx } from "clsx";
 interface Level { price: number; size: string; total: number; pct: number }
 
 function genBook(basePrice: number) {
+  if (!basePrice || basePrice <= 0) return { asks: [], bids: [] };
   const asks: Level[] = [];
   const bids: Level[]  = [];
   let askTotal = 0, bidTotal = 0;
