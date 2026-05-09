@@ -126,3 +126,38 @@ body::before {
   border: 1px solid rgba(124, 92, 252, 0.2) !important;
 }
 }
+
+/* ── Critical utility overrides (bypasses Tailwind JIT purge) ──────────── */
+.bg-void    { background-color: #050508; }
+.bg-abyss   { background-color: #08080f; }
+.bg-surface { background-color: #0d0d1a; }
+.bg-panel   { background-color: #111122; }
+.bg-arcium  { background-color: #7c5cfc; }
+.bg-profit  { background-color: #00e5a0; }
+.bg-loss    { background-color: #ff4466; }
+.text-text         { color: #e8e8ff; }
+.text-ghost        { color: #9494c4; }
+.text-dim          { color: #6b6b9e; }
+.text-arcium       { color: #7c5cfc; }
+.text-arcium-bright{ color: #a78bfa; }
+.text-profit       { color: #00e5a0; }
+.text-loss         { color: #ff4466; }
+.text-warn         { color: #ffaa00; }
+.text-void         { color: #050508; }
+.border-border\/30  { border-color: rgba(30,30,58,0.3); }
+.border-border\/40  { border-color: rgba(30,30,58,0.4); }
+.border-border\/50  { border-color: rgba(30,30,58,0.5); }
+.border-arcium\/20  { border-color: rgba(124,92,252,0.2); }
+.border-arcium\/30  { border-color: rgba(124,92,252,0.3); }
+.border-arcium\/50  { border-color: rgba(124,92,252,0.5); }
+.border-profit\/20  { border-color: rgba(0,229,160,0.2); }
+.border-loss\/20    { border-color: rgba(255,68,102,0.2); }
+.bg-arcium\/5   { background-color: rgba(124,92,252,0.05); }
+.bg-arcium\/10  { background-color: rgba(124,92,252,0.1); }
+.bg-arcium\/20  { background-color: rgba(124,92,252,0.2); }
+.bg-profit\/5   { background-color: rgba(0,229,160,0.05); }
+.bg-loss\/5     { background-color: rgba(255,68,102,0.05); }
+.bg-surface\/40 { background-color: rgba(13,13,26,0.4); }
+.bg-surface\/50 { background-color: rgba(13,13,26,0.5); }
+.shadow-profit { box-shadow: 0 0 20px rgba(0,229,160,0.2); }
+.shadow-loss   { box-shadow: 0 0 20px rgba(255,68,102,0.2); }
