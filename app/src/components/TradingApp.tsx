@@ -25,6 +25,7 @@ class ErrorBoundary extends Component<{children: ReactNode}, {err: string|null}>
 export default function TradingApp() {
   const [market, setMarket] = useState("BTC-PERP");
   const { markPrice } = useMarketStats(market);
+  const { markPrice } = useMarketStats(market);
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-void">
