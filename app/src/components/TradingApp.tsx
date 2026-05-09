@@ -34,12 +34,12 @@ export default function TradingApp() {
             <MarketSelector selected={market} onChange={setMarket} />
             <StatsBar market={market} />
           </div>
-          <div className="grid grid-cols-12 gap-2 mt-2">
+          <div className="grid grid-cols-12 gap-2 mt-2" style={{display:"grid",gridTemplateColumns:"8fr 2fr 2fr",gap:8,marginTop:8}}>
             <div className="col-span-8"><PriceChart market={market} /></div>
             <div className="col-span-2"><OrderBook market={market} /></div>
             <div className="col-span-2"><TradingPanel market={market} /></div>
           </div>
-          <div className="grid grid-cols-12 gap-2 mt-2">
+          <div className="grid grid-cols-12 gap-2 mt-2" style={{display:"grid",gridTemplateColumns:"8fr 2fr 2fr",gap:8,marginTop:8}}>
             <div className="col-span-8"><PositionsTable market={market} /></div>
             <div className="col-span-4"><PrivacyShield /></div>
           </div>
