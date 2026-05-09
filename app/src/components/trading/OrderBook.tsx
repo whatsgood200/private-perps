@@ -38,6 +38,7 @@ export function OrderBook({ market }: { market: string }) {
   const { markPrice: BASE } = useMarketStats(market);
   const [book, setBook] = useState(() => genBook(BASE));
   const [spread, setSpread] = useState(0.1);
+  useEffect(() => { setBook(genBook(BASE)); }, [BASE]);
 
   useEffect(() => {
     const iv = setInterval(() => {
