@@ -1,4 +1,5 @@
 "use client";
+import { useAllMarketPrices } from "@/hooks/useMarketStats";
 
 import { useState } from "react";
 import { ChevronDown, TrendingUp, TrendingDown } from "lucide-react";
@@ -16,6 +17,7 @@ export function MarketSelector({
   selected, onChange,
 }: { selected: string; onChange: (m: string) => void }) {
   const [open, setOpen] = useState(false);
+  const livePrices = useAllMarketPrices();
   const active = MARKETS.find((m) => m.symbol === selected) ?? MARKETS[0];
 
   return (
@@ -53,7 +55,7 @@ export function MarketSelector({
                 </div>
                 <div className="text-right">
                   <div className="text-xs font-mono text-text">
-                    ${m.price.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                    ${(livePrices[m.symbol] ?? m.price).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                   </div>
                   <div className={clsx("text-[10px] font-mono", m.change >= 0 ? "text-profit" : "text-loss")}>
                     {m.change >= 0 ? "+" : ""}{m.change}%

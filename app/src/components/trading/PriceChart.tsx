@@ -8,7 +8,7 @@ const TF = ["5m","15m","1h","4h","1d"];
 
 export function PriceChart({ market }: { market: string }) {
   const [tf, setTf] = useState("1h");
-  const { candles, loading } = usePriceHistory(market);
+  const { candles, loading } = usePriceHistory(market, tf);
   const latest = candles?.[candles.length - 1];
   const first  = candles?.[0];
   const change = latest && first ? ((latest.close - first.close) / first.close * 100).toFixed(2) : "0.00";

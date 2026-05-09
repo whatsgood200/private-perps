@@ -132,3 +132,23 @@ export function usePriceHistory(market: string, tf = "1h") {
 export function usePositions(market: string) {
   return { positions: [], orders: [], loading: false };
 }
+
+export function useAllMarketPrices() {
+  const [prices, setPrices] = useState<Record<string, number>>({});
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      await fetchAllPrices();
+      if (cancelled) return;
+      const result: Record<string, number> = {};
+      for (const [market, id] of Object.entries(COINGECKO_IDS)) {
+        if (priceCache[id]?.usd) result[market] = priceCache[id].usd;
+      }
+      if (Object.keys(result).length > 0) setPrices(result);
+    }
+    load();
+    const iv = setInterval(load, 25_000);
+    return () => { cancelled = true; clearInterval(iv); };
+  }, []);
+  return prices;
+}

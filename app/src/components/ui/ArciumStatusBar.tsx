@@ -21,7 +21,7 @@ async function fetchMempoolCount(): Promise<number> {
     if (!info) return 0;
     // Mempool account exists — parse computation count from data
     // Data layout: first 8 bytes discriminator, then u64 count
-    const count = info.data.length > 16 ? info.data.readUInt32LE(8) : 0;
+    const count = info.data.length > 16 ? Math.min(info.data.readUInt32LE(8), 50) : 0;
     return Math.max(0, Math.min(count, 999));
   } catch (_) {
     return 0;
