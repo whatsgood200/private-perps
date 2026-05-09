@@ -14,69 +14,71 @@ const FALLBACK: Record<string, number> = {
   "SOL-PERP": 172, "JUP-PERP": 1.24, "WIF-PERP": 3.11,
 };
 
+// Global price cache — one fetch for all markets
+type PriceData = { usd: number; usd_24h_change: number; usd_24h_vol: number };
+let priceCache: Record<string, PriceData> = {};
+let lastFetch = 0;
+let fetchPromise: Promise<void> | null = null;
+
+async function fetchAllPrices() {
+  const now = Date.now();
+  if (now - lastFetch < 20_000 && Object.keys(priceCache).length > 0) return;
+  if (fetchPromise) return fetchPromise;
+  fetchPromise = (async () => {
+    try {
+      const ids = Object.values(COINGECKO_IDS).join(",");
+      const res = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true`,
+        { headers: { Accept: "application/json" } }
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      priceCache = data;
+      lastFetch = Date.now();
+    } catch (_) {}
+    finally { fetchPromise = null; }
+  })();
+  return fetchPromise;
+}
+
 export interface MarketStats {
-  markPrice: number;
-  indexPrice: number;
-  priceChange: number;
-  volume24h: string;
-  openInterest: string;
-  fundingRate: number;
-  nextFunding: string;
-  high24h: number;
-  low24h: number;
+  markPrice: number; indexPrice: number; priceChange: number;
+  volume24h: string; openInterest: string; fundingRate: number;
+  nextFunding: string; high24h: number; low24h: number;
 }
 
 export function useMarketStats(market: string) {
   const id = COINGECKO_IDS[market] ?? "bitcoin";
   const fallback = FALLBACK[market] ?? 100;
 
-  const [stats, setStats] = useState<MarketStats>({
-    markPrice: fallback,
-    indexPrice: fallback,
-    priceChange: 0,
-    volume24h: "...",
+  const makeStats = (price: number, change: number, vol: number): MarketStats => ({
+    markPrice: price,
+    indexPrice: +(price * 0.9999).toFixed(price < 1 ? 6 : 2),
+    priceChange: +change.toFixed(2),
+    volume24h: vol >= 1e9 ? (vol/1e9).toFixed(2)+"B" : vol >= 1e6 ? (vol/1e6).toFixed(0)+"M" : vol.toFixed(0),
     openInterest: "🔒 Private",
     fundingRate: 0.0021,
     nextFunding: "in 42m",
-    high24h: fallback,
-    low24h: fallback,
+    high24h: +(price * (1 + Math.abs(change) / 200)),
+    low24h: +(price * (1 - Math.abs(change) / 200)),
   });
 
+  const [stats, setStats] = useState<MarketStats>(() => makeStats(fallback, 0, 0));
+
   useEffect(() => {
-    setStats(prev => ({ ...prev, markPrice: fallback, indexPrice: fallback }));
+    setStats(makeStats(fallback, 0, 0));
   }, [market]);
 
-    useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
-    async function fetch_price() {
-      try {
-        const res = await fetch(
-          `https://api.coingecko.com/api/v3/coins/${id}?localization=false&tickers=false&community_data=false&developer_data=false`,
-          { headers: { Accept: "application/json" } }
-        );
-        if (!res.ok) return;
-        const data = await res.json();
-        if (cancelled) return;
-        const md = data.market_data;
-        const price = md.current_price.usd;
-        const vol = md.total_volume.usd;
-        const volStr = vol >= 1e9 ? (vol / 1e9).toFixed(2) + "B"
-          : vol >= 1e6 ? (vol / 1e6).toFixed(0) + "M" : vol.toFixed(0);
-        setStats({
-          markPrice: price,
-          indexPrice: +(price * 0.9999).toFixed(2),
-          priceChange: +(md.price_change_percentage_24h ?? 0).toFixed(2),
-          volume24h: volStr,
-          openInterest: "🔒 Private",
-          fundingRate: 0.0021,
-          nextFunding: "in 42m",
-          high24h: +(md.high_24h.usd),
-          low24h: +(md.low_24h.usd),
-        });
-      } catch (_) {}
+    async function load() {
+      await fetchAllPrices();
+      if (cancelled) return;
+      const d = priceCache[id];
+      if (d?.usd) setStats(makeStats(d.usd, d.usd_24h_change ?? 0, d.usd_24h_vol ?? 0));
     }
-    fetch_price();
-    const iv = setInterval(fetch_price, 30_000);
+    load();
+    const iv = setInterval(load, 25_000);
     return () => { cancelled = true; clearInterval(iv); };
   }, [id]);
 
@@ -84,12 +86,7 @@ export function useMarketStats(market: string) {
 }
 
 export interface Candle {
-  time: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
+  time: string; open: number; high: number; low: number; close: number; volume: number;
 }
 
 export function usePriceHistory(market: string, tf = "1h") {
@@ -103,40 +100,27 @@ export function usePriceHistory(market: string, tf = "1h") {
     setLoading(true);
     async function load() {
       try {
-        const days = tf === "1m" || tf === "5m" ? 1
-          : tf === "15m" || tf === "1h" ? 1
-          : tf === "4h" ? 7 : 30;
+        const days = tf === "1d" ? 30 : tf === "4h" ? 7 : 1;
         const res = await fetch(
           `https://api.coingecko.com/api/v3/coins/${id}/ohlc?vs_currency=usd&days=${days}`,
           { headers: { Accept: "application/json" } }
         );
-        if (!res.ok) throw new Error("API error");
+        if (!res.ok) throw new Error("fail");
         const data: number[][] = await res.json();
         if (cancelled) return;
-        // CoinGecko OHLC: [timestamp, open, high, low, close]
-        const result: Candle[] = data.slice(-80).map((d) => {
-          const t = new Date(d[0]);
-          return {
-            time: t.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
-            open: d[1], high: d[2], low: d[3], close: d[4],
-            volume: 0,
-          };
-        });
-        setCandles(result);
+        setCandles(data.slice(-80).map(d => ({
+          time: new Date(d[0]).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
+          open: d[1], high: d[2], low: d[3], close: d[4], volume: 0,
+        })));
       } catch (_) {
-        // fallback to simple price line if OHLC fails
         if (!cancelled) {
           const now = Date.now();
           setCandles(Array.from({ length: 60 }, (_, i) => ({
-            time: new Date(now - (59 - i) * 3_600_000)
-              .toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
-            open: fallback, high: fallback * 1.002,
-            low: fallback * 0.998, close: fallback, volume: 0,
+            time: new Date(now - (59-i)*3_600_000).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"}),
+            open: fallback, high: fallback*1.001, low: fallback*0.999, close: fallback, volume: 0,
           })));
         }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+      } finally { if (!cancelled) setLoading(false); }
     }
     load();
     return () => { cancelled = true; };
