@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useMarketStats } from "@/hooks/useMarketStats";
 import { Lock } from "lucide-react";
 import { clsx } from "clsx";
 
