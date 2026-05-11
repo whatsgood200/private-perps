@@ -105,6 +105,14 @@ export function useTrade(market: string) {
       const compOffset = BigInt(Date.now());
       const reserved   = new anchor.BN(Math.floor(params.sizeUsd * 1_000_000 / params.leverage));
 
+// Store ephemeral key for later decryption in "Reveal mine"
+      try {
+    localStorage.setItem(`pp_key_${compOffset}`, Buffer.from(privKey).toString('hex'));
+    localStorage.setItem(`pp_nonce_${compOffset}`, Buffer.from(nonceBytes).toString('hex'));
+    localStorage.setItem(`pp_market_${compOffset}`, market);
+      } catch (_) {}
+      
+
       setIsEncrypting(false);
 
       // Step 2: Submit place_order to chain (Phantom prompts here)
