@@ -1,7 +1,7 @@
-```markdown
+```
 # Private Perps
 
-> Confidential perpetual futures on Solana — powered by Arcium MPC
+Confidential perpetual futures on Solana - powered by Arcium MPC
 
 **Live App:** https://app-vert-ten-73.vercel.app  
 **Network:** Solana Devnet  
@@ -17,13 +17,13 @@ Every perpetual DEX today leaks trader intent. When you place an order, the enti
 - Your entry price
 - Your liquidation price
 
-This enables **front-running**, **copy-trading**, and **targeted liquidations** — adversarial behavior that hurts real traders and reduces market depth.
+This enables **front-running**, **copy-trading**, and **targeted liquidations** - adversarial behavior that hurts real traders and reduces market depth.
 
 ---
 
 ## The Solution
 
-Private Perps encrypts your order fields **before they ever touch Solana**. Direction, size, and entry price are encrypted client-side using X25519 ECDH + RescueCipher. Only encrypted ciphertexts are stored on-chain. The Arcium MXE cluster runs order matching, liquidation checks, and funding computations entirely inside MPC — **no single node ever sees your plaintext data**.
+Private Perps encrypts your order fields **before they ever touch Solana**. Direction, size, and entry price are encrypted client-side using X25519 ECDH + RescueCipher. Only encrypted ciphertexts are stored on-chain. The Arcium MXE cluster runs order matching, liquidation checks, and funding computations entirely inside MPC - **no single node ever sees your plaintext data**.
 
 Only final PnL is revealed after settlement. Everything else stays private forever.
 
@@ -33,29 +33,30 @@ Only final PnL is revealed after settlement. Everything else stays private forev
 
 ```
 User Browser
-│
-├── Generates ephemeral X25519 keypair
-├── Performs ECDH with MXE public key → shared secret
-├── Encrypts [direction, size, price] with RescueCipher
-└── Submits ciphertext to Solana program
-        │
-        ▼
+|
+|-- Generates ephemeral X25519 keypair
+|-- Performs ECDH with MXE public key -> shared secret
+|-- Encrypts [direction, size, price] with RescueCipher
+|-- Submits ciphertext to Solana program
+        |
+        v
 Solana Program (on-chain)
-│
-├── Stores encrypted order record (EncryptedOrderRecord)
-├── Manages SPL USDC vault and reserved collateral
-└── Emits events for Arcium keepers
-        │
-        ▼
+|
+|-- Stores encrypted order record (EncryptedOrderRecord)
+|-- Manages SPL USDC vault and reserved collateral
+|-- Emits events for Arcium keepers
+        |
+        v
 Arcium MXE Cluster (4-of-5 threshold)
-│
-├── match_orders   — matches encrypted orders without revealing them
-├── check_liquidation — checks if positions should be liquidated privately
-└── compute_funding   — computes funding rates over encrypted positions
-        │
-        ▼
+|
+|-- match_orders      - matches encrypted orders without revealing them
+|-- check_liquidation - checks if positions should be liquidated privately
+|-- compute_funding   - computes funding rates over encrypted positions
+        |
+        v
 Settlement
-└── Only net PnL written back on-chain — direction/size/price stay private
+|-- Only net PnL written back on-chain
+|-- direction/size/price stay private forever
 ```
 
 **Privacy guarantee:** The MXE cluster uses threshold MPC across 5 Arx nodes. A minimum of 4 nodes must participate to compute. No single node holds enough keyshares to decrypt any order. Even if a node is compromised, trader data remains private.
@@ -71,7 +72,7 @@ Settlement
 | Entry price readable | Entry price private until settlement |
 | Liquidation price exposed | Liq. price computed privately in MPC |
 | Front-running possible | No exploitable on-chain signal |
-| Copy-trading trivial | Nothing to copy — all ciphertext |
+| Copy-trading trivial | Nothing to copy - all ciphertext |
 
 ---
 
@@ -106,19 +107,19 @@ pub struct EncryptedOrderRecord {
     pub trader: Pubkey,           // order owner
     pub market: Pubkey,           // market PDA
     pub order_id: u64,
-    pub ct_direction: [u8; 32],   // encrypted — long or short
-    pub ct_size: [u8; 32],        // encrypted — position size in USD
-    pub ct_price: [u8; 32],       // encrypted — entry price
+    pub ct_direction: [u8; 32],   // encrypted - long or short
+    pub ct_size: [u8; 32],        // encrypted - position size in USD
+    pub ct_price: [u8; 32],       // encrypted - entry price
     pub client_pub_key: [u8; 32], // ephemeral X25519 public key
     pub nonce: u128,              // encryption nonce
-    pub reserved_collateral: u64, // margin (readable — not sensitive)
+    pub reserved_collateral: u64, // margin (readable - not sensitive)
     pub computation_offset: u64,  // links order to Arcium computation
     pub placed_at_slot: u64,
     pub status: OrderStatus,      // Pending / Matched / Cancelled / Expired
 }
 ```
 
-The three encrypted fields (`ct_direction`, `ct_size`, `ct_price`) are never readable on-chain. Only the trader who placed the order can decrypt them — using the ephemeral private key stored locally in their browser.
+The three encrypted fields (`ct_direction`, `ct_size`, `ct_price`) are never readable on-chain. Only the trader who placed the order can decrypt them using the ephemeral private key stored locally in their browser.
 
 ---
 
@@ -141,22 +142,18 @@ The three encrypted fields (`ct_direction`, `ct_size`, `ct_price`) are never rea
 **Prerequisites:** Node.js 18+, Phantom wallet on devnet, devnet USDC
 
 ```bash
-# Clone
 git clone https://github.com/whatsgood200/private-perps
-cd private-perps
-
-# Install and run frontend
-cd app
+cd private-perps/app
 npm install
 npm run dev
 ```
 
-Open http://localhost:3000, connect Phantom on devnet, and use the devnet USDC faucet to fund your wallet.
+Open http://localhost:3000, connect Phantom on devnet.
 
 **To place a private order:**
 1. Click **Deposit 50 USDC Collateral**
 2. Enter a size and select leverage
-3. Click **Long** or **Short** — Phantom will prompt once
+3. Click **Long** or **Short** - Phantom will prompt once
 4. Click **Reveal mine** in the Positions tab to decrypt your order
 
 ---
@@ -169,7 +166,7 @@ When you place an order, an ephemeral X25519 private key is generated in your br
 2. For each account, it retrieves your stored private key
 3. ECDH is performed with the MXE public key to reconstruct the shared secret
 4. RescueCipher decrypts `[ct_direction, ct_size, ct_price]`
-5. Your real position data is displayed — only in your browser, never on-chain
+5. Your real position data is displayed - only in your browser, never on-chain
 
 Other traders see only encrypted ciphertexts. Your data never leaves your browser in plaintext.
 
@@ -180,12 +177,4 @@ Other traders see only encrypted ciphertexts. Your data never leaves your browse
 Built for the Arcium hackathon.  
 **GitHub:** https://github.com/whatsgood200/private-perps  
 **Live:** https://app-vert-ten-73.vercel.app
-```
-
-Save the file, then run:
-
-```cmd
-git add README.md
-git commit -m "docs: full README with Arcium explanation and privacy model"
-git push origin main
 ```
