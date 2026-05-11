@@ -138,7 +138,11 @@ The three encrypted fields (`ct_direction`, `ct_size`, `ct_price`) are never rea
 
 ## Local Development
 
-**Prerequisites:** Node.js 18+, Phantom wallet on devnet, devnet USDC
+Open http://localhost:3000, connect Phantom on devnet.
+
+**You need two things in your devnet wallet before trading:**
+1. Devnet SOL (for transaction fees) - get it free at https://faucet.solana.com
+2. Devnet USDC (for collateral) - the app deposits 50 USDC when you click the deposit button
 
 ```bash
 git clone https://github.com/whatsgood200/private-perps
@@ -147,13 +151,14 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000, connect Phantom on devnet.
+**Prerequisites:** Node.js 18+, Phantom wallet on devnet, devnet SOL (gas) + devnet USDC (collateral)
 
 **To place a private order:**
-1. Click **Deposit 50 USDC Collateral**
-2. Enter a size and select leverage
-3. Click **Long** or **Short** - Phantom will prompt once
-4. Click **Reveal mine** in the Positions tab to decrypt your order
+1. Get free devnet SOL at https://faucet.solana.com (needed for transaction fees)
+2. Click **Deposit 50 USDC Collateral** (this gives you trading collateral automatically)
+3. Enter a small size (e.g. 0.001 BTC or 0.01 SOL) to stay within the 50 USDC collateral limit
+4. Select leverage and click **Long** or **Short** - Phantom will prompt once
+5. Click **Reveal mine** in the Positions tab to decrypt and view your position
 
 ---
 
