@@ -37,13 +37,6 @@ A confidential perpetual futures protocol on Solana using Arcium MPC for privacy
     ANCHOR_PROVIDER_URL=https://api.devnet.solana.com ANCHOR_WALLET=~/.config/solana/id.json yarn ts-node scripts/initialize_market.ts
     cd app && npm install && npm run dev
 
-## Environment Variables
-
-    NEXT_PUBLIC_PROGRAM_ID=Bn8G8L4egZaL1LeWx2QZRFSRVWJWL8dEkj35i392tUmJ
-    NEXT_PUBLIC_MXE_PROGRAM_ID=C1au73j3zUtPi62GYo9HaTSG8kZ4vMZc2DyN7kjRdeNn
-    NEXT_PUBLIC_MARKET_PDA=AMUd4zsqkYuYwLUtwRi8Ae9MRaXc9KrHaFeyqqKinHrq
-    NEXT_PUBLIC_RPC_URL=https://api.devnet.solana.com
-    NEXT_PUBLIC_CLUSTER=devnet
 
 ## Privacy Model
 
