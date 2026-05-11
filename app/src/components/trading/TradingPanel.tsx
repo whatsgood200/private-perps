@@ -42,7 +42,7 @@ export function TradingPanel({ market }: { market: string }) {
       direction:  side,
       sizeUsd:    notional,
       leverage,
-      limitPrice: orderType === "limit" ? parseFloat(limitPrice) : 0,
+      limitPrice: orderType === "limit" ? parseFloat(limitPrice) : markPrice,
       stopLoss:   parseFloat(stopLoss) || 0,
       takeProfit: parseFloat(takeProfit) || 0,
       reduceOnly: false,
