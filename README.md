@@ -1,4 +1,3 @@
-```
 # Private Perps
 
 Confidential perpetual futures on Solana - powered by Arcium MPC
@@ -177,4 +176,3 @@ Other traders see only encrypted ciphertexts. Your data never leaves your browse
 Built for the Arcium hackathon.  
 **GitHub:** https://github.com/whatsgood200/private-perps  
 **Live:** https://app-vert-ten-73.vercel.app
-```
