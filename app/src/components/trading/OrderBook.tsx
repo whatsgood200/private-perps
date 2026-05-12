@@ -60,7 +60,7 @@ export function OrderBook({ market, markPrice }: { market: string; markPrice?: n
     }, 2000);
     return () => clearInterval(iv);
   }, []);
-  const midPrice = (book.asks[0]?.price ?? BASE + 0.5) ;
+  const midPrice = book.asks[0]?.price ?? baseRef.current;
 
   return (
     <div className="glass-bright border border-border/50 rounded-2xl overflow-hidden h-[420px] flex flex-col">
