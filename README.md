@@ -46,7 +46,7 @@ Solana Program (on-chain)
 |-- Emits events for Arcium keepers
         |
         v
-Arcium MXE Cluster (4-of-5 threshold)
+Arcium MXE Cluster 
 |
 |-- match_orders      - matches encrypted orders without revealing them
 |-- check_liquidation - checks if positions should be liquidated privately
@@ -57,8 +57,6 @@ Settlement
 |-- Only net PnL written back on-chain
 |-- direction/size/price stay private forever
 ```
-
-**Privacy guarantee:** The MXE cluster uses threshold MPC across 5 Arx nodes. A minimum of 4 nodes must participate to compute. No single node holds enough keyshares to decrypt any order. Even if a node is compromised, trader data remains private.
 
 ---
 
