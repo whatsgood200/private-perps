@@ -154,11 +154,12 @@ npm run dev
 **Prerequisites:** Node.js 18+, Phantom wallet on devnet, devnet SOL (gas) + devnet USDC (collateral)
 
 **To place a private order:**
-1. Get free devnet SOL at https://faucet.solana.com (needed for transaction fees)
-2. Click **Deposit 50 USDC Collateral** (this gives you trading collateral automatically)
-3. Enter a small size (e.g. 0.001 BTC or 0.01 SOL) to stay within the 50 USDC collateral limit
-4. Select leverage and click **Long** or **Short** - Phantom will prompt once
-5. Click **Reveal mine** in the Positions tab to decrypt and view your position
+1. Get free devnet SOL at https://faucet.solana.com (for transaction fees)
+2. Connect Phantom wallet set to Devnet
+3. Click **Get 100 Test USDC** — instant airdrop, no setup needed
+4. Click **Deposit 50 USDC Collateral** — Phantom will prompt once
+5. Enter a small size and click **Long** or **Short** — Phantom will prompt once
+6. Click **Reveal mine** to decrypt and view your position
 
 ---
 
