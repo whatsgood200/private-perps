@@ -14,3 +14,5 @@ Thumbs.db
 yarn-error.log
 npm-debug.log*
 .vercel
+recovered-keypair.json 
+recover.mjs 

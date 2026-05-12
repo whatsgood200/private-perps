@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { Lock, Shield, ChevronDown, Info, Zap, AlertTriangle } from "lucide-react";
+import { Lock, Shield, ChevronDown, AlertTriangle } from "lucide-react";
 import { clsx } from "clsx";
 import { useTrade } from "@/hooks/useTrade";
 import { useMarketStats } from "@/hooks/useMarketStats";
@@ -18,23 +18,22 @@ export function TradingPanel({ market }: { market: string }) {
   const { publicKey } = useWallet();
   const { placeOrder, depositCollateral, isEncrypting, isSubmitting, isDepositing, lastTxid, depositTxid, error } = useTrade(market);
 
-  const [side,       setSide]       = useState<Side>("long");
-  const [orderType,  setOrderType]  = useState<OrderType>("market");
-  const [size,       setSize]       = useState("");
-  const [leverage,   setLeverage]   = useState(10);
-  const [limitPrice, setLimitPrice] = useState("");
-  const [stopLoss,   setStopLoss]   = useState("");
-  const [takeProfit, setTakeProfit] = useState("");
-  const [showAdv,    setShowAdv]    = useState(false);
+  const [side,          setSide]          = useState<Side>("long");
+  const [orderType,     setOrderType]     = useState<OrderType>("market");
+  const [size,          setSize]          = useState("");
+  const [leverage,      setLeverage]      = useState(10);
+  const [limitPrice,    setLimitPrice]    = useState("");
+  const [stopLoss,      setStopLoss]      = useState("");
+  const [takeProfit,    setTakeProfit]    = useState("");
+  const [showAdv,       setShowAdv]       = useState(false);
+  const [faucetLoading, setFaucetLoading] = useState(false);
+  const [faucetDone,    setFaucetDone]    = useState(false);
+  const [faucetError,   setFaucetError]   = useState<string | null>(null);
 
-  // Derived values
   const { markPrice } = useMarketStats(market);
-  const sizeNum    = parseFloat(size) || 0;
-  const notional   = sizeNum * (orderType === "limit" && limitPrice ? parseFloat(limitPrice) : markPrice);
-  const margin     = notional / leverage;
-  const liqPriceEst = side === "long"
-    ? markPrice * (1 - 1 / leverage * 0.9)
-    : markPrice * (1 + 1 / leverage * 0.9);
+  const sizeNum  = parseFloat(size) || 0;
+  const notional = sizeNum * (orderType === "limit" && limitPrice ? parseFloat(limitPrice) : markPrice);
+  const margin   = notional / leverage;
 
   const handleSubmit = async () => {
     if (!sizeNum) return;
@@ -47,6 +46,28 @@ export function TradingPanel({ market }: { market: string }) {
       takeProfit: parseFloat(takeProfit) || 0,
       reduceOnly: false,
     });
+  };
+
+  const claimFaucet = async () => {
+    if (!publicKey) return;
+    setFaucetLoading(true);
+    setFaucetError(null);
+    try {
+      const res = await fetch("/api/faucet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wallet: publicKey.toBase58() }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFaucetDone(true);
+      } else {
+        setFaucetError(data.error ?? "Faucet failed");
+      }
+    } catch (_) {
+      setFaucetError("Faucet request failed");
+    }
+    setFaucetLoading(false);
   };
 
   const btnDisabled = !sizeNum || isEncrypting || isSubmitting;
@@ -244,6 +265,26 @@ export function TradingPanel({ market }: { market: string }) {
           </div>
         )}
 
+        {/* Faucet */}
+        {publicKey && !faucetDone && (
+          <button
+            onClick={claimFaucet}
+            disabled={faucetLoading}
+            className="w-full py-2 rounded-xl font-mono text-xs border border-warn/30 bg-warn/5 text-warn hover:bg-warn/10 transition-all disabled:opacity-40"
+          >
+            {faucetLoading ? "Sending USDC..." : "🪙 Get 100 Test USDC (Devnet)"}
+          </button>
+        )}
+        {faucetDone && (
+          <div className="text-[10px] font-mono text-profit text-center py-1">
+            ✓ 100 Test USDC sent — now deposit collateral below
+          </div>
+        )}
+        {faucetError && (
+          <div className="text-[10px] font-mono text-loss text-center py-1">
+            {faucetError}
+          </div>
+        )}
 
         {/* Deposit collateral */}
         {publicKey && depositTxid && (
