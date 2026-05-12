@@ -140,9 +140,10 @@ The three encrypted fields (`ct_direction`, `ct_size`, `ct_price`) are never rea
 
 Open http://localhost:3000, connect Phantom on devnet.
 
-**You need two things in your devnet wallet before trading:**
+**You need three things in your devnet wallet before trading:**
 1. Devnet SOL (for transaction fees) - get it free at https://faucet.solana.com
-2. Devnet USDC (for collateral) - the app deposits 50 USDC when you click the deposit button
+2. Click Get 100 Test USDC — instant airdrop, no setup needed
+3. Devnet USDC (for collateral) - the app deposits 50 USDC when you click the deposit button
 
 ```bash
 git clone https://github.com/whatsgood200/private-perps
