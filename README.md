@@ -85,15 +85,7 @@ Settlement
 | Arcium Cluster Offset | 456 (devnet) |
 | Network | Solana Devnet |
 
----
 
-## Arcium Circuits
-
-| Circuit | ACU Cost | Purpose |
-|---|---|---|
-| `match_orders` | 3,280,220,738 | Match encrypted buy/sell orders |
-| `check_liquidation` | 6,454,694,978 | Liquidation check over encrypted positions |
-| `compute_funding` | 2,820,491,452 | Funding rate over encrypted sizes |
 
 ---
 
